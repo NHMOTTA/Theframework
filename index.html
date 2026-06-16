@@ -694,7 +694,7 @@
 
 <main id="main">
 <section class="hero">
-  <video class="hero-video" autoplay muted loop playsinline aria-hidden="true">
+  <video class="hero-video" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true">
     <source src="office-hero.mp4" type="video/mp4">
   </video>
   <div class="hero-bg" aria-hidden="true">
@@ -1214,20 +1214,25 @@
     });
   }
 
-  // Hero video — programmatic play for mobile browsers that block the autoplay attribute
+  // Hero video — force load then play; retry on canplay and first touch for strict mobile policies
   var heroVideo = document.querySelector('.hero-video');
   if (heroVideo && !prefersReduced) {
     heroVideo.muted = true;
-    var playPromise = heroVideo.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(function() {
-        // Retry on first user interaction (covers browsers with strict autoplay policies)
-        document.addEventListener('touchstart', function tryPlay() {
-          heroVideo.play().catch(function(){});
-          document.removeEventListener('touchstart', tryPlay);
-        }, { once: true, passive: true });
-      });
+    heroVideo.load();
+    var videoPlayed = false;
+    function tryPlayVideo() {
+      if (videoPlayed) return;
+      var p = heroVideo.play();
+      if (p !== undefined) {
+        p.then(function(){ videoPlayed = true; }).catch(function() {
+          document.addEventListener('touchstart', function handleTouch() {
+            heroVideo.play().catch(function(){});
+          }, { once: true, passive: true });
+        });
+      }
     }
+    tryPlayVideo();
+    heroVideo.addEventListener('canplay', tryPlayVideo, { once: true });
   }
 
   // CTA cursor-tracking spotlight
