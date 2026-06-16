@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Framework Co. — Full-Service Digital Agency</title>
-<meta name="description" content="The Framework Co. is a remote, full-service digital agency based across the United States — brand strategy, product design, development, and growth marketing for ambitious companies.">
+<meta name="description" content="We build the online side of your business so you can focus on doing what you do best.">
 <link rel="icon" type="image/png" href="LogoPNG%20(2).png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1212,6 +1212,22 @@
     backToTop.addEventListener('click', function(){
       window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
     });
+  }
+
+  // Hero video — programmatic play for mobile browsers that block the autoplay attribute
+  var heroVideo = document.querySelector('.hero-video');
+  if (heroVideo && !prefersReduced) {
+    heroVideo.muted = true;
+    var playPromise = heroVideo.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(function() {
+        // Retry on first user interaction (covers browsers with strict autoplay policies)
+        document.addEventListener('touchstart', function tryPlay() {
+          heroVideo.play().catch(function(){});
+          document.removeEventListener('touchstart', tryPlay);
+        }, { once: true, passive: true });
+      });
+    }
   }
 
   // CTA cursor-tracking spotlight
